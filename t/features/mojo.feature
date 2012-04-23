@@ -17,5 +17,10 @@ Feature: Simple Mojolicious Application Testing
     Then I should see the "Logout" url
     And I should see the "Logged\\s+in\\s+as" text
     And I should see the "Mojolicious\\s+and\\s+Bootstrap" text
-
+  
+  Scenario: Being able to logout
+    When I go to "logout"
+    Then I should see the "Sign Up" url
+    And I should see the "You are not logged in" text
+    And I should see the "Mojolicious\\s+and\\s+Bootstrap" text
   

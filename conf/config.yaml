@@ -48,10 +48,13 @@ app_menu:
     01_user_menu:
       text: User Menu
       value: /user/menu
-    03_logout:
+    03_finance:
+      text: Finance
+      value: /finance
+    04_logout:
       text: Logout
       value: /logout  
-    04_about:
+    05_about:
       text: About
       value: /user/about
 
@@ -68,10 +71,13 @@ app_menu:
     01_admin_menu:
       text: Admin Menu
       value: /admin/menu
-    03_logout:
+    03_finance:
+      text: Finance
+      value: /finance
+    04_logout:
       text: Logout
       value: /logout
-    04_about:
+    05_about:
       text: About
       value: /admin/about
 

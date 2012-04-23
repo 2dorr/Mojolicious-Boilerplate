@@ -4065,3 +4065,71 @@ a.thumbnail:hover {
     margin-left: 30px;
   }
 }
+
+ /* .box div holds the bottom image */
+
+
+  .box {
+    
+    background: url(http://www.dreamweavertutorial.co.uk/dreamweaver/examples/text-boxes/images/boxBottom.jpg); 
+    background-repeat: no-repeat
+    background-attachment: scroll left bottom;
+    background-position: left bottom;
+    margin-bottom: 10px;
+    padding: 0 0 15px;
+    width: 250px;
+ }
+
+ /*  this is the title h3 tag and contains the background
+     image for the title	*/
+
+  .box h3 {
+
+    background: url(http://www.dreamweavertutorial.co.uk/dreamweaver/examples/text-boxes/images/box.jpg) repeat scroll 0 0;
+    color: #000;
+    font-size: 17px;
+    height: 35px;
+    line-height: 30px;
+    margin: 0;
+    padding: 0 15px;
+  
+ }
+
+ /* The paragraph tag contains the side borders mark-up */
+
+ .box p {
+
+    background: #ffffff none repeat scroll 0 0;
+    border-color: #CCC;
+    border-width: 0 1px;
+    border-style: solid;
+    color: #444444;
+    font-size: 11px;
+    line-height: 1.3em;
+    margin: 0;
+    padding: 15px 14px 0;
+    width: 220px;
+  
+ }
+
+.subnav-fixed {
+    border-color: #D5D5D5;
+    border-radius: 0 0 0 0;
+    border-width: 0 0 1px;
+    box-shadow: 0 1px 0 #FFFFFF inset, 0 1px 5px rgba(0, 0, 0, 0.1);
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 40px;
+    z-index: 1020;
+}
+
+.subnav {
+    background-color: #EEEEEE;
+    background-image: -moz-linear-gradient(center top , #F5F5F5 0%, #EEEEEE 100%);
+    background-repeat: repeat-x;
+    border: 1px solid #E5E5E5;
+    border-radius: 4px 4px 4px 4px;
+    height: 36px;
+    width: 100%;
+}
