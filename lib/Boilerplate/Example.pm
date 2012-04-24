@@ -5,7 +5,10 @@ use strict;
 use warnings;
 use utf8;
 
-use Financial;
+use Perl6::Say;
+use Data::Printer;
+
+use Boilerplate::Financial;
 
 sub welcome {
   my $self = shift;
@@ -39,7 +42,7 @@ sub logout{
 
 sub about{
   my $self = shift;
-  
+
 }
 
 sub signed_in_about{
@@ -61,44 +64,44 @@ sub signed_in_menu{
 }
 
 sub finance {
-my $self = shift;
-
-my @arr_params = $self->param();
-my %input_params = map{ $_ => $self->param($_); } @arr_params if( scalar( @arr_params ) );
-my $start_config = \%input_params;
-my $months = [];
-my $month  = {
-  num_aps         => $start_config->{start_aparments_no},
-  total_to_invest => $start_config->{monthly_investment}
-    + $start_config->{start_aparments_no} * $start_config->{monthly_rent},
-  cash => $start_config->{start_cash},
-  debt => $start_config->{initial_debt},
-};
-
-my $i           = 0;
-my $result = { string => {} };
-my $old_num_aps = $start_config->{num_aps};
-my $prev_debt   = 0;
-while ( $i < $start_config->{total_months} ) {
-
-  $month = Financial::next_month_stats($month, $start_config);
-  die "Error in month $i" . p($month) if ( $month->{debt} < 0 or $month->{credit_value} < 0 );
-  $month = Financial::get_assets_value($month, $start_config) and say "month $i:" . p($month) if $old_num_aps != $month->{num_aps};
-  my %local_month = %$month;          
-  push( @{$months}, \%local_month );
-  say "apartment no:" . $month->{num_aps} . " paid in month no: $i" if $prev_debt > 0 && $month->{debt} == 0;
-  $old_num_aps = $month->{num_aps};
-  $prev_debt   = $month->{debt};
-
-  $start_config->{apartment_value} *= ( 1 + ( $start_config->{apartment_appreciation} / 100 ) / 12 );
-  $start_config->{monthly_rent}    *= ( 1 + ( $start_config->{yearly_rent_increase} / 100 ) / 12 );
-  $i++;
-}
-
-$self->render( {
-  template => 'example/finance',
-  math     => $months,    
-} );
+  my $self = shift;
+  
+  my @arr_params = $self->param();
+  my %input_params = map{ $_ => $self->param($_); } @arr_params if( scalar( @arr_params ) );
+  my $start_config = \%input_params;
+  my $months = [];
+  my $month  = {
+    num_aps         => $start_config->{start_aparments_no},
+    total_to_invest => $start_config->{monthly_investment}
+      + $start_config->{start_aparments_no} * $start_config->{monthly_rent},
+    cash => $start_config->{start_cash},
+    debt => $start_config->{initial_debt},
+  };
+  
+  my $i           = 0;
+  my $result = { string => {} };
+  my $old_num_aps = $start_config->{num_aps};
+  my $prev_debt   = 0;
+  while ( $i < $start_config->{total_months} ) {
+  
+    $month = Boilerplate::Financial->next_month_stats($month, $start_config);
+    die "Error in month $i" . p($month) if ( $month->{debt} < 0 or $month->{credit_value} < 0 );
+    $month = Boilerplate::Financial->get_assets_value($month, $start_config) and say "month $i:" . p($month) if $old_num_aps != $month->{num_aps};
+    my %local_month = %$month;          
+    push( @{$months}, \%local_month );
+    say "apartment no:" . $month->{num_aps} . " paid in month no: $i" if $prev_debt > 0 && $month->{debt} == 0;
+    $old_num_aps = $month->{num_aps};
+    $prev_debt   = $month->{debt};
+  
+    $start_config->{apartment_value} *= ( 1 + ( $start_config->{apartment_appreciation} / 100 ) / 12 );
+    $start_config->{monthly_rent}    *= ( 1 + ( $start_config->{yearly_rent_increase} / 100 ) / 12 );
+    $i++;
+  }
+  
+  $self->render( {
+    template => 'example/finance',
+    math     => $months,    
+  } );
   
 }
 

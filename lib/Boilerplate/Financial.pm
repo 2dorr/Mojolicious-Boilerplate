@@ -1,4 +1,4 @@
-package Financial;
+package Boilerplate::Financial;
 
 use strict;
 use warnings;
