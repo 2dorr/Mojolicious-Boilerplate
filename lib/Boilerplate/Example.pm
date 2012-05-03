@@ -7,6 +7,9 @@ use utf8;
 
 use Perl6::Say;
 use Data::Printer;
+use DateTime;
+use DateTime::Format::HTTP;
+use Data::Dumper;
 
 use Boilerplate::Financial;
 
@@ -84,9 +87,9 @@ sub finance {
   my $prev_debt   = 0;
   while ( $i < $start_config->{total_months} ) {
   
-    $month = Boilerplate::Financial->next_month_stats($month, $start_config);
+    $month = Boilerplate::Financial::next_month_stats($month, $start_config);
     die "Error in month $i" . p($month) if ( $month->{debt} < 0 or $month->{credit_value} < 0 );
-    $month = Boilerplate::Financial->get_assets_value($month, $start_config) and say "month $i:" . p($month) if $old_num_aps != $month->{num_aps};
+    $month = Boilerplate::Financial::get_assets_value($month, $start_config) and say "month $i:" . p($month) if $old_num_aps != $month->{num_aps};
     my %local_month = %$month;          
     push( @{$months}, \%local_month );
     say "apartment no:" . $month->{num_aps} . " paid in month no: $i" if $prev_debt > 0 && $month->{debt} == 0;
@@ -98,19 +101,34 @@ sub finance {
     $i++;
   }
   
+  my $display_data = [];
+  my $display_apps = [];
+  my $display_money_data = [];
+  my $dt = DateTime->now();
+  my $total_invested = 0;
+  my $current_date = 0;
+  foreach my $row ( @$months ) {
+    $total_invested += $start_config->{monthly_investment};
+    $current_date = $dt->add(months => 1)->year;
+    push @$display_apps, [ $current_date, $row->{num_aps} ];
+    push @$display_data, [ $current_date, $total_invested ];
+    push @$display_money_data, [ $current_date, $row->{debt}, $row->{assets_value}, $row->{max_credit_on_time}, $row->{total_possible_credit}, $row->{cash} ];
+  }
   $self->render( {
-    template => 'example/finance',
-    math     => $months,    
+    template           => 'example/finance',
+    math               => $months,
+    display_apps       => $display_apps,
+    display_data       => $display_data,
+    display_money_data => $display_money_data,
   } );
-  
+
 }
 
-sub _get_a_user{
+sub _get_a_user {
   my $self = shift;
 
   #randomly get a user from config
   return $self->app->{config}->{demo_users}->{ ( keys %{ $self->app->{config}->{demo_users} } )[ rand( scalar( keys %{ $self->app->{config}->{demo_users} } ) ) ] };
 }
-
 
 1;

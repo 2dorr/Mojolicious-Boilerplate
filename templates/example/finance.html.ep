@@ -5,11 +5,224 @@
 %use Data::Dumper;
 %use Date::Manip;
 %use List::MoreUtils qw/ uniq /;
+%use JSON;
+
+
+<html>
 
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
+<body>
+<div>
+<form action="/finance" method="post" class="form-horizontal">
+<br>
+<br>    
+<legend>Please input the data you want: </legend>
+<div class="control-group"><label for="1" class="control-label">Monthly Inv 1: </label><input id="1" type="text" name="monthly_investment"> </div>
+<div class="control-group"><label for="2" class="control-label">App value: </label><input id="2" type="text" name="apartment_value"></div>
+<div class="control-group"><label for="3" class="control-label">App numbers: </label><input type="text" name="start_aparments_no" id="3"></div>
+<div class="control-group"><label for="4" class="control-label">Down Payment:</label><input type="text" id="4" name="down_payment" ></div>
+<div class="control-group"><label for="5" class="control-label">Rent: </label><input type="text" name="monthly_rent" ></div>
+<div class="control-group"><label for="6" class="control-label">Start Cash: </label><input type="text" id="6" name="start_cash"></div>  
+<div class="control-group"><label for="7" class="control-label">Initial Debt: </label><input type="text" id="7" name="initial_debt"></div>
+<div class="control-group"><label for="8" class="control-label">Credit Rate: </label><input type="text" id="8" name="credit_interest_rate"> </div>
+<div class="control-group"><label for="9" class="control-label">Total Months: </label><input type="text" id="9" name="total_months"></div>
+
+<div class="control-group"><label for="10" class="control-label">Percent from Assuered: </label><input type="text" name="percent_from_assured" id="10"></div>
+
+<div class="control-group"><label for="11" class="control-label">Max Month per Credit: </label><input type="text" name="max_months_per_credit" id="11"></div>
+
+<div class="control-group"><label for="12" class="control-label">Yearly Rent Increase: </label><input type="text" name="yearly_rent_increase" id="12"></div>
+
+<div class="control-group"><label for="13" class="control-label">App Appreciation: </label><input type="text" name="apartment_appreciation" id="13"></div>
+
+<div class="control-group"><label for="14" class="control-label">Annual Taxes: </label><input type="text" name="annual_taxes" id="14"></div>
+
+<div class="control-group"><label for="15" class="control-label">Annual Reparation: </label><input type="text" name="annual_reparations" id="15"></div>
+<input type="submit" value="Submit">
+</form>
+</div>
+
+<input type='hidden' id='current_page' />  
+<input type='hidden' id='show_per_page' /> 
+
+<div id="content">   
+%my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+%my $current_month  = $mon+1;
+%my @years          = ();
+%my $current_year   = UnixDate( ParseDate($year), "%Y" );
+%my $year_id        = 100;
+%my $nav_year_id    = 100; 
+%my $current_months = {
+%   1  => "January",
+%   2  => "February",
+%   3  => "March",
+%   4  => "April",
+%   5  => "May",
+%   6  => "June",
+%   7  => "July",
+%   8  => "August",
+%   9  => "September",
+%   10 => "October",
+%   11 => "November",
+%   12 => "December",
+%};
+%foreach my $month ( @$math ) {
+%   push @years, $current_year;
+%   if ( ( $current_month % 12 ) == 1 ) {
+%       $current_year++;
+%       $current_month = 1;
+%       $year_id++;
+%   }
+    <ul>
+%   if ( ( ( $current_month == $mon + 1 ) and ( $current_year == UnixDate( ParseDate($year), "%Y" ) ) ) or ( $current_month == 1 ) ) {
+        <br>
+        <div><legend class="page-header" id=<%=$year_id%> style="font-style:italic;font-weight:bold;font-family:cursive;color:red;"><%=$current_year%></legend></div>
+        <div id="results" style="float:left">
+%   }
+%   elsif ( $current_month == 12 ) {
+        <div id="results">
+%}
+%   else {
+    <div id="results" style="float:left">
+%   }
+    <h3> <%= $current_months->{$current_month}.' '.$current_year %> </h3>        
+    <p name="apps">Num apps: <%= $month->{num_aps} %></p> 
+    <p>Debt: <%= $month->{debt}.' ' %></p>
+    <p>Asset value: <%= $month->{assets_value} %></p>
+    <p>Total to invest: <%= $month->{total_to_invest} %></p>
+    <p>Max Credit on time: <%= $month->{max_credit_on_time} %></p>
+    <p>Total Credit: <%=$month->{total_possible_credit} %></p>
+    <p>Cash: <%= $month->{cash} %></p>
+    </div>
+    </ul>
+%   $current_month++;
+%}
+
+<div class="subnav subnav-fixed">
+<ul class="nav nav-pills">
+%foreach my $year ( uniq @years ) {
+    <li><a href="#<%=$nav_year_id%>"><%= $year%></a></li>
+%   $nav_year_id++;
+%}
+<li class="active"><a href="#chart_div">Charts</a></li>
+</ul>
+</div>
+</div>
+<div style="float:left">
+<div id="chart_div" style="width: 900px; height: 500px;"></div>
+<div id="chart_div1" style="width: 900px; height: 500px;"></div>
+<div id="chart_div2" style="width: 900px; height: 500px;"></div>
+</div>
+
+<!--<div id='page_navigation' class = "pagination"></div>-->
+</body>
 
 <script type="text/javascript">
 
+    var paragraphs = $('div#results p');
+    
+    var num_apps_find = /Num apps:(.*)/;
+    var debt_find = /Debt:(.*)/;
+    var asset_find = /Asset value:(.*)/;
+    var total_invest_find = /Total to invest:(.*)/;
+    var max_credit_find = /Max Credit on time:(.*)/;
+    var total_credit_find = /Total Credit:(.*)/;
+    var cash_find = /Cash:(.*)/;
+    
+    var num_apps = new Array();
+    var debt = new Array();
+    var asset = new Array();
+    var total_invest = new Array();
+    var max_credit = new Array();
+    var total_credit = new Array();
+    var cash = new Array();
+    
+    var matching;
+    var apps = document.getElementsByName("apps");
+    var d = new Date();
+    var year = d.getFullYear().valueOf();
+    var month = d.getMonth();
+    var day = d.getDay();
+    
+    var i = 0;
+    while( i < paragraphs.length ) {
+        if ( num_apps_find.test($(paragraphs[i]).text() ) ) { 
+            matching = $(paragraphs[i]).text().match( num_apps_find );
+            num_apps.push(matching[1]);
+        }
+        else if ( debt_find.test($(paragraphs[i]).text() ) ) {
+            matching = $(paragraphs[i]).text().match( debt_find );
+            debt.push(matching[1]);
+        }
+        else if ( asset_find.test($(paragraphs[i]).text() ) ) {
+            matching = $(paragraphs[i]).text().match( asset_find );
+            asset.push(matching[1]);
+        }
+        else if ( total_invest_find.test($(paragraphs[i]).text() ) ) {
+            matching = $(paragraphs[i]).text().match( total_invest_find );
+            total_invest.push(matching[1]);
+        }
+        else if ( max_credit_find.test($(paragraphs[i]).text() ) ) {
+            matching = $(paragraphs[i]).text().match( max_credit_find );
+            max_credit.push(matching[1]);
+
+        }
+        else if ( total_credit_find.test($(paragraphs[i]).text() ) ){
+            matching = $(paragraphs[i]).text().match( total_credit_find );
+            total_credit.push(matching[1]);
+        }
+        else {
+            matching = $(paragraphs[i]).text().match( cash_find );
+            cash.push(matching[1]);
+        }
+        i++
+    }
+
+    google.load("visualization", "1", {packages:["corechart"]});
+    google.setOnLoadCallback(drawChart);
+      
+    function drawChart() {
+        var app_data   = new google.visualization.DataTable();
+        var tinv_data = new google.visualization.DataTable();
+        var money_evolution_data = new google.visualization.DataTable();;
+        app_data.addColumn('number', 'Year');
+        app_data.addColumn('number', 'Appartments');
+        
+        tinv_data.addColumn('number', 'Year');
+        tinv_data.addColumn('number', 'Total investment');
+        
+        money_evolution_data.addColumn('number', 'Year');
+        money_evolution_data.addColumn('number', 'Debt');
+        money_evolution_data.addColumn('number', 'Asset ');
+        money_evolution_data.addColumn('number', 'Max credit on time');
+        money_evolution_data.addColumn('number', 'Total possible credit');
+        money_evolution_data.addColumn('number', 'Cash');
+        //var j;
+        //var total_length = apps.length + parseInt(month);
+        app_data.addRows(<%== JSON::to_json( $display_apps )%>);
+        tinv_data.addRows(<%== JSON::to_json( $display_data )%>);
+        money_evolution_data.addRows(<%== JSON::to_json( $display_money_data )%>);
+        //for ( j=month; j<=total_length; j++ ) {
+        //    money_data.addRows([
+        //        [ new Date(year, j, day), parseFloat(debt[j]), parseFloat(asset[j]), parseFloat(total_invest[j]), parseFloat(max_credit[j]), parseFloat(cash[j])]
+        //    ]);
+        //}
+        var options = {
+            apps     : {title: 'Appartment evolution'},
+            tinv     : {title: 'Total investment'},
+            money_ev : {title: 'Money Evolution'},
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(app_data, options['apps']);
+        chart = new google.visualization.LineChart(document.getElementById('chart_div1'));
+        chart.draw(tinv_data, options['tinv']);
+        chart = new google.visualization.LineChart(document.getElementById('chart_div2'));
+        chart.draw(money_evolution_data, options['money_ev']);
+
+    }
 //$(document).ready(function(){  
 // 
 //    //how much items per page to show  
@@ -95,107 +308,5 @@
 //} 
 
 </script>
-
-<body>
-<div>
-<form action="/finance" method="post" class="form-horizontal">
-<br>
-<br>    
-<legend>Please input the data you want: </legend>
-<div class="control-group"><label for="1" class="control-label">Monthly Inv 1: </label><input id="1" type="text" name="monthly_investment"> </div>
-<div class="control-group"><label for="2" class="control-label">App value: </label><input id="2" type="text" name="apartment_value"></div>
-<div class="control-group"><label for="3" class="control-label">App numbers: </label><input type="text" name="start_aparments_no" id="3"></div>
-<div class="control-group"><label for="4" class="control-label">Down Payment:</label><input type="text" id="4" name="down_payment" ></div>
-<div class="control-group"><label for="5" class="control-label">Rent: </label><input type="text" name="monthly_rent" ></div>
-<div class="control-group"><label for="6" class="control-label">Start Cash: </label><input type="text" id="6" name="start_cash"></div>  
-<div class="control-group"><label for="7" class="control-label">Initial Debt: </label><input type="text" id="7" name="initial_debt"></div>
-<div class="control-group"><label for="8" class="control-label">Credit Rate: </label><input type="text" id="8" name="credit_interest_rate"> </div>
-<div class="control-group"><label for="9" class="control-label">Total Months: </label><input type="text" id="9" name="total_months"></div>
-
-<div class="control-group"><label for="10" class="control-label">Percent from Assuered: </label><input type="text" name="percent_from_assured" id="10"></div>
-
-<div class="control-group"><label for="11" class="control-label">Max Month per Credit: </label><input type="text" name="max_months_per_credit" id="11"></div>
-
-<div class="control-group"><label for="12" class="control-label">Yearly Rent Increase: </label><input type="text" name="yearly_rent_increase" id="12"></div>
-
-<div class="control-group"><label for="13" class="control-label">App Appreciation: </label><input type="text" name="apartment_appreciation" id="13"></div>
-
-<div class="control-group"><label for="14" class="control-label">Annual Taxes: </label><input type="text" name="annual_taxes" id="14"></div>
-
-<div class="control-group"><label for="15" class="control-label">Annual Reparation: </label><input type="text" name="annual_reparations" id="15"></div>
-<input type="submit" value="Submit">
-</form>
-</div>
-
-<input type='hidden' id='current_page' />  
-<input type='hidden' id='show_per_page' /> 
-
-<div id="content">   
-%my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-%my $current_month  = $mon+1;
-%my @years          = ();
-%my $current_year   = UnixDate( ParseDate($year), "%Y" );
-%my $year_id        = 100;
-%my $nav_year_id    = 100; 
-%my $current_months = {
-%   1  => "January",
-%   2  => "February",
-%   3  => "March",
-%   4  => "April",
-%   5  => "May",
-%   6  => "June",
-%   7  => "July",
-%   8  => "August",
-%   9  => "September",
-%   10 => "October",
-%   11 => "November",
-%   12 => "December",
-%};
-%foreach my $month ( @$math ) {
-%   push @years, $current_year;
-%   if ( ( $current_month % 12 ) == 1 ) {
-%       $current_year++;
-%       $current_month = 1;
-%       $year_id++;
-%   }
-    <ul>
-%   if ( ( ( $current_month == $mon + 1 ) and ( $current_year == UnixDate( ParseDate($year), "%Y" ) ) ) or ( $current_month == 1 ) ) {
-        <br>
-        <div><legend class="page-header" id=<%=$year_id%> style="font-style:italic;font-weight:bold;font-family:cursive;color:red;"><%=$current_year%></legend></div>
-        <div style="float:left">
-%   }
-%   elsif ( $current_month == 12 ) {
-        <div>
-%}
-%   else {
-    <div style="float:left">
-%   }
-    <h3> <%= $current_months->{$current_month}.' '.$current_year %> </h3>        
-    <p>
-    Num apps: <%= $month->{num_aps} %> <br>
-    Debt: <%= $month->{debt}.' ' %> <br>
-    Asset value: <%= $month->{assets_value} %> <br>
-    Total to invest: <%= $month->{total_to_invest} %> <br>
-    Max Credit on time: <%= $month->{max_credit_on_time} %> <br>
-    Total Credit : <%=$month->{total_possible_credit} %> <br>
-    Cash : <%= $month->{cash} %><br>
-    </p>
-    </div>
-    </ul>
-%   $current_month++;
-%}
-
-<div class="subnav subnav-fixed">
-<ul class="nav nav-pills">
-%foreach my $year ( uniq @years ) {
-    <li class="active"><a href="#<%=$nav_year_id%>"><%= $year%></a></li>
-%   $nav_year_id++;
-%}
-</ul>
-</div>
-</div>
-
-<!--<div id='page_navigation' class = "pagination"></div>-->
-</body>
 
 </html>

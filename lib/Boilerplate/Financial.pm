@@ -28,7 +28,6 @@ sub get_assets_value {
 }   ## --- end sub get_assets_value
 
 sub buy_aps {
-
   my $month = shift;
   my $start_config = shift;
   
@@ -69,6 +68,7 @@ sub buy_aps {
 sub next_month_stats {
   my $month_object = shift;
   my $start_config = shift;
+  
   my $monthly_taxes       = $start_config->{annual_taxes} / 12;
   my $monthly_reparations = $start_config->{annual_reparations} / 12;
 
@@ -114,6 +114,5 @@ sub next_month_stats {
 
   return $month_object;
 } 
-
 
 1;
